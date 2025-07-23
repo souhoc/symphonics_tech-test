@@ -32,3 +32,14 @@ class Message(BaseModel):
             data_dict = message_dict['data']
 
             return DeviceMessage(**data_dict)
+
+# XXX: shoud be needed for dependency injection
+class Command(BaseModel):
+    device_id: str
+    switch: bool
+
+class Status(BaseModel):
+    def __init__(self, status: str):
+        self.status = status
+
+    status: str
