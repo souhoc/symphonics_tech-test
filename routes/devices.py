@@ -1,18 +1,17 @@
 from fastapi import APIRouter,HTTPException
 
-from ..models.devices import Message, Status
+from ..models.devices import Message 
 
 router = APIRouter()
 
-# TODO: see dependency injection for writing to BigQuery
 @router.post("/message")
-async def receive_message(message: Message) -> Status:
+async def receive_message(message: Message):
     try:
         device_message  = message.get_device_message()
 
         print("div_msg: ", device_message)
         if device_message.bizCode != "devicePropertyMessage":
-            return Status("no action")
+            return {"status": "no actions"}
 
         data = device_message.bizData
 
@@ -30,13 +29,12 @@ async def receive_message(message: Message) -> Status:
                 # TODO: save entry to BigQuery
                 pass
 
-        return Status("success")
+        return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# TODO: see dependency injection for writing to pubsub toppic
 @router.post("/send/{device_id}")
-async def send_command(device_id: str, switch: bool) ->Status:
+async def send_command(device_id: str, switch: bool):
     try:
         command_message = {
             "switch": switch,
@@ -45,6 +43,6 @@ async def send_command(device_id: str, switch: bool) ->Status:
         # TODO: Publish command_message to PubSub
         pass
 
-        return Status("command sent")
+        return {"status": "command sent"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
