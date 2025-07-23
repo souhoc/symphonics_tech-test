@@ -1,18 +1,20 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
+import json
 
-from ..models.devices import Message
+from ..models.devices import Message, Status
 from ..services.bigquery import BigQueryClientDependency
+from ..services.pubsub import PubSubPublisherClientDependency
 
 router = APIRouter()
 
 
 @router.post("/message")
-async def post_message(message: Message, bq_client: BigQueryClientDependency):
+async def post_message(message: Message, bq_client: BigQueryClientDependency)->Status:
     try:
         device_message = message.get_device_message()
         if device_message.bizCode != "devicePropertyMessage":
-            return {"status": "no actions"}
+            return Status("no actions")
 
         data = device_message.bizData
 
@@ -41,18 +43,28 @@ async def post_message(message: Message, bq_client: BigQueryClientDependency):
                     status_code=502, detail="Failed to insert"
                 )  # Better not precise the stack
 
-        return {"status": "success"}
+        return Status("success")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/send/{device_id}")
-async def post_command(device_id: str, switch: bool):
+async def post_command(device_id: str, switch: bool, publisher_client: PubSubPublisherClientDependency) -> Status:
     try:
         command_message = {"switch": switch, "devId": device_id}
-        # TODO: Publish command_message to PubSub
-        pass
 
-        return {"status": "command sent"}
+        project_id = "project-id" # XXX: get it from env
+        topic_id = "send_command" # XXX: can be moved in env or config file 
+
+        topic_path = publisher_client.topic_path(project_id, topic_id)
+
+        message_json = json.dumps(command_message)
+        message_bytes = message_json.encode('utf-8')
+
+        future = publisher_client.publish(topic_path, message_bytes)
+        message_id = future.result()
+        print(f"Message {message_id} send to {device_id}")
+
+        return Status("command sent")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
