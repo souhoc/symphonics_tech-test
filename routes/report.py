@@ -33,6 +33,6 @@ async def get_report(start_at: str, end_at: str, bq_client: BigQueryClientDepend
                 report[date_str] = {}
             report[date_str][hour_str] = total_value
 
-        return {"report": report}
+        return report
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
