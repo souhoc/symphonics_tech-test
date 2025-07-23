@@ -6,7 +6,7 @@ from ..services.bigquery import BigQueryClientDependency
 router = APIRouter()
 
 @router.get("/report")
-async def get_report(start_at: str, end_at: str, bq_client: BigQueryClientDependency) -> Report:
+def get_report(start_at: str, end_at: str, bq_client: BigQueryClientDependency) -> Report:
     try:
         table_id = "project_id.dataset.devices_properties" # XXX: get it from env
 

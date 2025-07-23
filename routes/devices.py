@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.post("/message")
-async def post_message(message: Message, bq_client: BigQueryClientDependency)->Status:
+def post_message(message: Message, bq_client: BigQueryClientDependency)->Status:
     try:
         device_message = message.get_device_message()
         if device_message.bizCode != "devicePropertyMessage":
@@ -49,7 +49,7 @@ async def post_message(message: Message, bq_client: BigQueryClientDependency)->S
 
 
 @router.post("/send/{device_id}")
-async def post_command(device_id: str, switch: bool, publisher_client: PubSubPublisherClientDependency) -> Status:
+def post_command(device_id: str, switch: bool, publisher_client: PubSubPublisherClientDependency) -> Status:
     try:
         command_message = {"switch": switch, "devId": device_id}
 
