@@ -32,3 +32,9 @@ class Message(BaseModel):
             data_dict = message_dict['data']
 
             return DeviceMessage(**data_dict)
+
+class Status(BaseModel):
+    def __init__(self, status: str):
+        self.status = status
+
+    status: str
