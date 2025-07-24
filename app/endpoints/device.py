@@ -1,10 +1,14 @@
 from fastapi import APIRouter, HTTPException, Path, Query, Body
+import logging
 
 from app.schemas.message import Message, MessageResponse
 from app.schemas.command import CommandResponse
 from app.services import device
 
-device_service = device.DeviceService("", "")
+
+logger = logging.getLogger("deviceEndpoint")
+
+device_service = device.DeviceService("", "")  # NOTE: must be filled with real ID
 
 router = APIRouter(prefix="/devices")
 
@@ -17,8 +21,10 @@ def post_message(message: Message = Body(..., description="Message from pubsub")
         # device_service.store_device_updates(updates)
         return MessageResponse(status="success")
     except ValueError as e:
+        logger.error(f"Failed handle a message on value error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed handle a message: {str(e)}")
         raise HTTPException(status_code=502)  # no detail for unexpected error
 
 
@@ -34,4 +40,5 @@ def post_device_send(
         # device_service.send_switch_message(device_id, switch)
         return CommandResponse(status="success")
     except Exception as e:
+        logger.error(f"Failed handle a message: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
