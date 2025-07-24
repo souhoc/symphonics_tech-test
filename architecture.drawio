@@ -114,7 +114,7 @@
         <mxCell id="GZ5DpgEYk3kkQtt8ggrh-3" value="" style="group" vertex="1" connectable="0" parent="1">
           <mxGeometry x="610" y="460" width="150" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="models_group" value="Models" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#F57C00;fontSize=10;fontStyle=1;verticalAlign=top;" parent="GZ5DpgEYk3kkQtt8ggrh-3" vertex="1">
+        <mxCell id="models_group" value="Models/Schemas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#F57C00;fontSize=10;fontStyle=1;verticalAlign=top;" parent="GZ5DpgEYk3kkQtt8ggrh-3" vertex="1">
           <mxGeometry width="150" height="110" as="geometry" />
         </mxCell>
         <mxCell id="GZ5DpgEYk3kkQtt8ggrh-2" value="" style="group" vertex="1" connectable="0" parent="GZ5DpgEYk3kkQtt8ggrh-3">
@@ -146,9 +146,6 @@
         </mxCell>
         <mxCell id="service3" value="ReportService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;" parent="GZ5DpgEYk3kkQtt8ggrh-4" vertex="1">
           <mxGeometry y="30" width="73.8888888888889" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="service4" value="ValidationService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;" parent="GZ5DpgEYk3kkQtt8ggrh-4" vertex="1">
-          <mxGeometry x="79.16666666666667" y="30" width="84.44444444444444" height="20" as="geometry" />
         </mxCell>
         <mxCell id="GZ5DpgEYk3kkQtt8ggrh-7" value="" style="group" vertex="1" connectable="0" parent="1">
           <mxGeometry x="610" y="350" width="170" height="80" as="geometry" />
