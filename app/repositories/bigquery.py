@@ -7,9 +7,23 @@ from app.models.device_update import DeviceUpdate
 
 
 class BigQueryRepository:
-    """Repository for batch inserting device updates, or fetching them per hour"""
+    """Repository for batch inserting device updates or fetching them per hour.
+
+    This class provides functionality to interact with Google BigQuery, specifically
+    for handling batch insertions of device updates and fetching aggregated device
+    data on an hourly basis.
+    """
 
     def __init__(self, project_id: str):
+        """Initializes the BigQueryRepository with the given project ID.
+
+        Args:
+            project_id (str): The Google Cloud project ID where the BigQuery dataset resides.
+
+        Attributes:
+            logger: Logger for logging information and errors.
+            client: BigQuery client used for interacting with BigQuery.
+        """
         self.logger = logging.getLogger("BigQueryRepository")
         self.client = bigquery.Client(project=project_id)
 
@@ -18,6 +32,15 @@ class BigQueryRepository:
     def batch_insert_device_updates(
         self, device_updates: List[DeviceUpdate], table_id: str
     ):
+        """Inserts a batch of device updates into a specified BigQuery table.
+
+        Args:
+            device_updates (List[DeviceUpdate]): A list of DeviceUpdate objects to be inserted.
+            table_id (str): The BigQuery table ID to insert the updates into.
+
+        Raises:
+            Exception: If there is an error during the batch insert operation.
+        """
         rows_to_insert = [
             {
                 "device_id": update.device_id,
@@ -34,7 +57,9 @@ class BigQueryRepository:
             if errors:
                 self.logger.error("Errors while inserting rows: %s", errors)
             else:
-                self.logger.info("Successfully inserted batch of %d rows.", len(rows_to_insert))
+                self.logger.info(
+                    "Successfully inserted batch of %d rows.", len(rows_to_insert)
+                )
         except Exception as e:
             self.logger.error("Exception during batch insert: %s", str(e))
             raise Exception("Couldn't store the updates")
@@ -42,6 +67,22 @@ class BigQueryRepository:
     def fetch_device_updates_per_hour(
         self, table_id: str, start_at: datetime, end_at: datetime
     ) -> List[Dict]:
+        """Fetches device updates aggregated per hour from a specified BigQuery table.
+
+        This method queries the specified table and returns the total value of device
+        updates for each hour within the given time range.
+
+        Args:
+            table_id (str): The BigQuery table ID to query.
+            start_at (datetime): Start time of the interval.
+            end_at (datetime): End time of the interval.
+
+        Returns:
+            List[Dict]: A list of dictionaries containing the hour timestamp and the total value of device updates.
+
+        Raises:
+            Exception: If there is an error during the query operation.
+        """
         query = f"""
                 SELECT
                     TIMESTAMP_TRUNC(time, HOUR) as time_hour,
@@ -58,7 +99,10 @@ class BigQueryRepository:
             output = []
             for row in results:
                 output.append(
-                    {"time_hour": row.time_hour.isoformat(), "total_value": row.total_value}
+                    {
+                        "time_hour": row.time_hour.isoformat(),
+                        "total_value": row.total_value,
+                    }
                 )
 
             return output
