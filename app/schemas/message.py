@@ -23,7 +23,8 @@ class DeviceMessage(BaseModel):
 
 
 class Message(BaseModel):
-    """ PubSub message """
+    """PubSub message"""
+
     data: Optional[str]
     attributes: dict
     messageId: str

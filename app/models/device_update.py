@@ -1,12 +1,13 @@
-from pydantic import BaseModel, validator 
+from pydantic import BaseModel, validator
 from datetime import datetime
 
+
 class DeviceUpdate(BaseModel):
-    device_id: str # XXX: might want to make it uuid
+    device_id: str  # XXX: might want to make it uuid
     product_id: str
     code: str
     value: int
-    time:  datetime
+    time: datetime
 
     @validator("time")
     def check_time(cls, v: datetime):

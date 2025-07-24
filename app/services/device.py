@@ -6,6 +6,7 @@ import json
 from app.schemas.message import Message, DeviceMessage
 from app.models.device_update import DeviceUpdate
 from app.repositories.bigquery import BigQueryRepository
+from app.repositories.pubsub import PubSubRepository
 
 
 class DeviceService:
@@ -16,6 +17,7 @@ class DeviceService:
     def __init__(self, project_id: str, table_id: str):
         self.logger = logging.getLogger("DeviceService")
         self.bigquery_repo = BigQueryRepository(project_id)
+        self.pubsub_repo = PubSubRepository(project_id)
         self.table_id = table_id
 
         self.logger.info(
@@ -108,3 +110,34 @@ class DeviceService:
         except Exception as e:
             self.logger.error(f"Error fetching device data: {str(e)}")
             raise Exception(f"Failed to fetch device data: {str(e)}")
+
+    def send_switch_message(self, device_id: str, switch: bool):
+        """
+        Sends a switch command message for a device via Pub/Sub.
+
+        Args:
+            device_id (str): The ID of the device to send the command to.
+            switch (bool): The switch state to send (True for ON, False for OFF).
+
+        Raises:
+            Exception: If there is an error while sending the message.
+        """
+        try:
+            command_message = {"switch": switch, "devId": device_id}
+
+            # Convert the command message to a JSON string
+            message_data = json.dumps(command_message)
+
+            # Publish the message to the topic
+            message_id = self.pubsub_repo.publish_message(
+                topic_name="send_command",  # Topic name for sending commands
+                message_data=message_data,
+            )
+
+            self.logger.info(
+                f"Sent switch command (state: {switch}) to device {device_id}. Message ID: {message_id}"
+            )
+
+        except Exception as e:
+            self.logger.error(f"Failed to send switch message: {str(e)}")
+            raise Exception("Failed to send switch message")
