@@ -1,6 +1,7 @@
 from typing import Dict
 from datetime import datetime
 import logging
+import os
 
 from app.repositories.bigquery import BigQueryRepository
 
@@ -55,3 +56,12 @@ def generate_report(
     except Exception as e:
         self.logger.error(f"Failed to generate report: {str(e)}")
         raise Exception("Failed to generate report.")
+
+def get_report_service():
+    """Dependency provider for ReportService"""
+    report_service = ReportService(
+        os.getenv("GCP_PROJECT_ID"),
+        os.getenv("BIGQUERY_TABLE_ID")
+    )
+    return report_service
+

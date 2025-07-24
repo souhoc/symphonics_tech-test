@@ -2,6 +2,7 @@ from typing import List, Dict
 from datetime import datetime
 import logging
 import json
+import os
 
 from app.schemas.message import Message, DeviceMessage
 from app.models.device_update import DeviceUpdate
@@ -147,3 +148,12 @@ class DeviceService:
         except Exception as e:
             self.logger.error(f"Failed to send switch message: {str(e)}")
             raise Exception("Failed to send switch message")
+
+
+def get_device_service():
+    """Dependency provider for DeviceService."""
+    device_service = DeviceService(
+        os.getenv("GCP_PROJECT_ID"),
+        os.getenv("BIGQUERY_TABLE_ID")
+    )
+    return device_service

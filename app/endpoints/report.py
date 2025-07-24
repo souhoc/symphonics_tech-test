@@ -1,17 +1,13 @@
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path,Depends
 from datetime import datetime
 import logging
 import os
 
-from app.services import report
+from app.services.report import ReportService, get_report_service
 from app.schemas.report import ReportResponse
 
 logger = logging.getLogger("reportEndpoint")
 
-report_service = report.ReportService(
-    os.getenv("GCP_PROJECT_ID"),
-    os.getenv("BIGQUERY_TABLE_ID")
-)
 
 router = APIRouter()
 
@@ -20,6 +16,7 @@ router = APIRouter()
 def get_report(
     start_at: datetime = Path(..., description="Start time of the report period"),
     end_at: datetime = Path(..., description="End time of the report period"),
+    report_service: ReportService = Depends(get_report_service)
 ):
     try:
         if start_at >= end_at:

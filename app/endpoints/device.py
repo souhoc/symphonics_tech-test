@@ -1,24 +1,22 @@
-from fastapi import APIRouter, HTTPException, Path, Query, Body
+from fastapi import APIRouter, HTTPException, Path, Query, Body, Depends
 import logging
 import re
-import os
 
 from app.schemas.message import Message, MessageResponse
 from app.schemas.command import CommandResponse
-from app.services import device
+from app.services.device import DeviceService, get_device_service
 
 
 logger = logging.getLogger("deviceEndpoint")
-
-device_service = device.DeviceService(
-    os.getenv("GCP_PROJECT_ID"), os.getenv("BIGQUERY_TABLE_ID")
-)
 
 router = APIRouter(prefix="/devices")
 
 
 @router.post("/message", response_model=MessageResponse)
-def post_message(message: Message = Body(..., description="Message from pubsub")):
+def post_message(
+    message: Message = Body(..., description="Message from pubsub"),
+    device_service: DeviceService = Depends(get_device_service)
+):
     try:
         updates = device_service.process_device_message(message)
         # NOTE: uncomment when connected to bigquery
@@ -38,6 +36,7 @@ def post_device_send(
         ..., description="Device's id to which the commend must be sent"
     ),
     switch: bool = Query(False, description="The value to send"),
+    device_service: DeviceService = Depends(get_device_service)
 ):
     if not re.match(r"^[a-zA-Z0-9_-]+$", device_id):
         raise HTTPException(status_code=400, detail="Invalid device ID format")
