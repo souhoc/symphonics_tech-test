@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, Path, Query, Body
 import logging
+import re
+import os
 
 from app.schemas.message import Message, MessageResponse
 from app.schemas.command import CommandResponse
@@ -8,7 +10,9 @@ from app.services import device
 
 logger = logging.getLogger("deviceEndpoint")
 
-device_service = device.DeviceService("", "")  # NOTE: must be filled with real ID
+device_service = device.DeviceService(
+    os.getenv("GCP_PROJECT_ID"), os.getenv("BIGQUERY_TABLE_ID")
+)
 
 router = APIRouter(prefix="/devices")
 
@@ -22,10 +26,10 @@ def post_message(message: Message = Body(..., description="Message from pubsub")
         return MessageResponse(status="success")
     except ValueError as e:
         logger.error(f"Failed handle a message on value error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Invalid input provided")
     except Exception as e:
         logger.error(f"Failed handle a message: {str(e)}")
-        raise HTTPException(status_code=502)  # no detail for unexpected error
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{device_id}/send", response_model=CommandResponse)
@@ -35,10 +39,13 @@ def post_device_send(
     ),
     switch: bool = Query(False, description="The value to send"),
 ):
+    if not re.match(r"^[a-zA-Z0-9_-]+$", device_id):
+        raise HTTPException(status_code=400, detail="Invalid device ID format")
+
     try:
         # NOTE: uncomment when connected to pubsub
         # device_service.send_switch_message(device_id, switch)
         return CommandResponse(status="success")
     except Exception as e:
         logger.error(f"Failed handle a message: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Unexpected error occured")

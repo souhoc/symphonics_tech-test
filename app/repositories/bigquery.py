@@ -83,17 +83,24 @@ class BigQueryRepository:
         Raises:
             Exception: If there is an error during the query operation.
         """
-        query = f"""
-                SELECT
-                    TIMESTAMP_TRUNC(time, HOUR) as time_hour,
-                    SUM(value) as total_value
-                FROM `{table_id}`
-                WHERE time BETWEEN TIMESTAMP('{start_at.isoformat()}') AND TIMESTAMP('{end_at.isoformat()}')
-                GROUP BY time_hour
-                ORDER BY time_hour
-            """
+        query = """
+            SELECT
+                TIMESTAMP_TRUNC(time, HOUR) as time_hour,
+                SUM(value) as total_value
+            FROM `@table_id`
+            WHERE time BETWEEN @start_at AND @end_at
+            GROUP BY time_hour
+            ORDER BY time_hour
+        """
         try:
-            query_job = self.client.query(query)
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ScalarQueryParameter("table_id", "STRING", table_id),
+                    bigquery.ScalarQueryParameter("start_at", "TIMESTAMP", start_at),
+                    bigquery.ScalarQueryParameter("end_at", "TIMESTAMP", end_at),
+                ]
+            )
+            query_job = self.client.query(query, job_config=job_config)
             results = query_job.result()
 
             output = []

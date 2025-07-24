@@ -1,13 +1,17 @@
 from fastapi import APIRouter, HTTPException, Path
 from datetime import datetime
 import logging
+import os
 
 from app.services import report
 from app.schemas.report import ReportResponse
 
 logger = logging.getLogger("reportEndpoint")
 
-report_service = report.ReportService("", "")  # NOTE: must be filled with real ID
+report_service = report.ReportService(
+    os.getenv("GCP_PROJECT_ID"),
+    os.getenv("BIGQUERY_TABLE_ID")
+)
 
 router = APIRouter()
 

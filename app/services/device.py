@@ -8,6 +8,8 @@ from app.models.device_update import DeviceUpdate
 from app.repositories.bigquery import BigQueryRepository
 from app.repositories.pubsub import PubSubRepository
 
+MAX_JSON_SIZE = 1024 * 1024  # Let's make the max size to a json to 1M
+
 
 class DeviceService:
     """
@@ -29,6 +31,9 @@ class DeviceService:
     def get_device_message(self, message: Message) -> DeviceMessage:
         if not message.data or not message.data.strip():
             raise ValueError("Missing or empty data in message")
+
+        if len(message.data) > MAX_JSON_SIZE:
+            raise ValueError("Message payload too large")
 
         try:
             message_dict = json.loads(message.data)
@@ -65,8 +70,9 @@ class DeviceService:
                 )
                 device_updates.append(device_update)
 
+            devId = "***" + device_message.bizData.devId[-4:]  # sanitize id
             self.logger.info(
-                f"Processed message for device {device_message.bizData.devId}: "
+                f"Processed message for device {devId}: "
                 f"{len(device_updates)} updates"
             )
 
